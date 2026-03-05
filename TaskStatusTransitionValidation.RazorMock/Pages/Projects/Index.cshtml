@@ -1,0 +1,17 @@
+﻿@page
+@model TaskStatusTransitionValidation.RazorMock.Pages.Projects.IndexModel
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<h2>Projects</h2>
+<p>Signed in as: <b>@Model.Me.DisplayName</b> (@Model.Me.Role)</p>
+
+<ul>
+    @foreach (var p in Model.Projects)
+    {
+        <li>
+            <a asp-page="/Projects/Details" asp-route-id="@p.Id">@p.Name</a>
+        </li>
+    }
+</ul>

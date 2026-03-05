@@ -1,0 +1,22 @@
+﻿@page
+@model TaskStatusTransitionValidation.RazorMock.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h2>Login (Mock)</h2>
+
+<form method="post">
+    <div>
+        <label>Display Name</label>
+        <input asp-for="Input.DisplayName" />
+    </div>
+    <div>
+        <label>Role</label>
+        <select asp-for="Input.Role">
+            <option value="Leader">Leader</option>
+            <option value="Worker">Worker</option>
+        </select>
+    </div>
+    <button type="submit">Sign in</button>
+</form>
