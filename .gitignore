@@ -7,3 +7,4 @@ obj/
 # local dev settings (secrets / local urls)
 appsettings.Development.json
 **/appsettings.Development.json
+**/launchSettings.json
