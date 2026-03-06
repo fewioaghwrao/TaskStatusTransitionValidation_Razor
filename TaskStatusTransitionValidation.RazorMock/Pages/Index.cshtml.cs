@@ -1,20 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace TaskStatusTransitionValidation.RazorMock.Pages
+namespace TaskStatusTransitionValidation.RazorMock.Pages;
+
+public class IndexModel(ILogger<IndexModel> logger) : PageModel
 {
-    public class IndexModel : PageModel
+    public IActionResult OnGet()
     {
-        private readonly ILogger<IndexModel> _logger;
+        var token = Request.Cookies["token"];
 
-        public IndexModel(ILogger<IndexModel> logger)
+        if (string.IsNullOrWhiteSpace(token))
         {
-            _logger = logger;
+            logger.LogInformation("Token not found. Redirecting to Login.");
+            return RedirectToPage("/Login");
         }
 
-        public void OnGet()
-        {
-
-        }
+        logger.LogInformation("Token found. Redirecting to Projects.");
+        return RedirectToPage("/Projects/Index");
     }
 }

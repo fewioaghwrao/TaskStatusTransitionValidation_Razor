@@ -2,29 +2,42 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TaskStatusTransitionValidation.RazorMock.Services;
 
-namespace TaskStatusTransitionValidation.RazorMock.Pages;
-
-public class LoginModel(IMeProvider meProvider) : PageModel
+public class LoginModel : PageModel
 {
+    private readonly ApiClient _api;
+
+    public LoginModel(ApiClient api)
+    {
+        _api = api;
+    }
+
     [BindProperty]
-    public InputModel Input { get; set; } = new();
+    public LoginRequest Input { get; set; } = new();
 
-    public sealed class InputModel
-    {
-        public string DisplayName { get; set; } = "Mock User";
-        public UserRole Role { get; set; } = UserRole.Leader;
-    }
+    public string? ErrorMessage { get; set; }
 
-    public void OnGet()
+    public async Task<IActionResult> OnPostAsync()
     {
-        var me = meProvider.GetMe();
-        Input.DisplayName = me.DisplayName;
-        Input.Role = me.Role;
-    }
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
 
-    public IActionResult OnPost()
-    {
-        meProvider.SetMe(new MeDto(Input.DisplayName, Input.Role));
+        var result = await _api.LoginAsync(Input);
+
+        if (result == null)
+        {
+            ErrorMessage = "ログインに失敗しました。入力内容をご確認ください。";
+            return Page();
+        }
+
+        Response.Cookies.Append("token", result.Token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false, // HTTPS化したら true 推奨
+            SameSite = SameSiteMode.Lax
+        });
+
         return RedirectToPage("/Projects/Index");
     }
 }

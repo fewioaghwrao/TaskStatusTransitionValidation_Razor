@@ -1,22 +1,255 @@
 ﻿@page
-@model TaskStatusTransitionValidation.RazorMock.Pages.LoginModel
+@model LoginModel
 @{
     ViewData["Title"] = "Login";
 }
 
-<h2>Login (Mock)</h2>
+<main style="
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background:
+      radial-gradient(900px 400px at 10% 0%, rgba(99,102,241,.18), transparent 50%),
+      radial-gradient(900px 400px at 90% 0%, rgba(16,185,129,.14), transparent 50%),
+      linear-gradient(180deg, #0b1020 0%, #0b1020 35%, #0a0f1c 100%);
+">
+    <div style="width: 100%; max-width: 520px;">
+        <!-- Brand / Header -->
+        <div style="margin-bottom: 18px;">
+            <div style="
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 10px;
+                border-radius: 999px;
+                background: rgba(255,255,255,.06);
+                border: 1px solid rgba(255,255,255,.10);
+            ">
+                <span aria-hidden="true" style="
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 999px;
+                    background: linear-gradient(90deg, #6366f1, #10b981);
+                    display: inline-block;
+                "></span>
+                <span style="color: rgba(255,255,255,.85); font-size: 12px;">
+                    小規模チーム向け 案件・タスク管理
+                </span>
+            </div>
 
-<form method="post">
-    <div>
-        <label>Display Name</label>
-        <input asp-for="Input.DisplayName" />
+            <h1 style="
+                margin-top: 12px;
+                margin-bottom: 6px;
+                font-size: 26px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                color: rgba(255,255,255,.92);
+            ">
+                サインイン
+            </h1>
+
+            <p style="
+                margin: 0;
+                color: rgba(255,255,255,.65);
+                font-size: 13px;
+                line-height: 1.6;
+            ">
+                案件とタスクの進捗を一元管理し、チームでの共有をスムーズにします。
+            </p>
+        </div>
+
+        <!-- Card -->
+        <section style="
+            border-radius: 16px;
+            padding: 18px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.10);
+            box-shadow: 0 12px 40px rgba(0,0,0,.35);
+        ">
+            <form method="post" id="loginForm">
+                <div style="display: grid; gap: 12px;">
+                    <!-- Email -->
+                    <div>
+                        <label asp-for="Input.Email" style="
+                            display: block;
+                            font-size: 12px;
+                            color: rgba(255,255,255,.75);
+                        ">
+                            メールアドレス
+                        </label>
+
+                        <input asp-for="Input.Email"
+                               id="email"
+                               autocomplete="email"
+                               placeholder="you@example.com"
+                               style="
+                                   width: 100%;
+                                   margin-top: 6px;
+                                   padding: 12px 12px;
+                                   border-radius: 10px;
+                                   border: 1px solid rgba(255,255,255,.14);
+                                   outline: none;
+                                   background: rgba(15, 23, 42, .55);
+                                   color: rgba(255,255,255,.92);
+                                   box-sizing: border-box;
+                               " />
+
+                        <span asp-validation-for="Input.Email"
+                              style="margin: 8px 0 0; font-size: 12px; color: rgba(248,113,113,.95); display:block;">
+                        </span>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label asp-for="Input.Password" style="
+                            display: block;
+                            font-size: 12px;
+                            color: rgba(255,255,255,.75);
+                        ">
+                            パスワード
+                        </label>
+
+                        <div style="position: relative; margin-top: 6px;">
+                            <input asp-for="Input.Password"
+                                   id="passwordInput"
+                                   type="password"
+                                   autocomplete="current-password"
+                                   placeholder="••••••••"
+                                   style="
+                                       width: 100%;
+                                       padding: 12px 44px 12px 12px;
+                                       border-radius: 10px;
+                                       border: 1px solid rgba(255,255,255,.14);
+                                       outline: none;
+                                       background: rgba(15, 23, 42, .55);
+                                       color: rgba(255,255,255,.92);
+                                       box-sizing: border-box;
+                                   " />
+
+                            <button type="button"
+                                    id="togglePasswordBtn"
+                                    aria-label="パスワードを表示"
+                                    style="
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+            color: rgba(255,255,255,.85);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+                                👁
+                            </button>
+                        </div>
+
+                        <span asp-validation-for="Input.Password"
+                              style="margin: 8px 0 0; font-size: 12px; color: rgba(248,113,113,.95); display:block;">
+                        </span>
+                    </div>
+
+                    <!-- Server Error -->
+                    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                    {
+                        <div role="alert" style="
+                                padding: 10px 12px;
+                                border-radius: 12px;
+                                background: rgba(248,113,113,.10);
+                                border: 1px solid rgba(248,113,113,.25);
+                                color: rgba(254,226,226,.95);
+                                font-size: 13px;
+                                line-height: 1.6;
+                            ">
+                            @Model.ErrorMessage
+                        </div>
+                    }
+
+                    <!-- Submit -->
+                    <button type="submit"
+                            id="submitBtn"
+                            style="
+                                margin-top: 4px;
+                                padding: 12px 14px;
+                                border-radius: 12px;
+                                border: 1px solid rgba(255,255,255,.12);
+                                background: linear-gradient(90deg, rgba(99,102,241,.95), rgba(16,185,129,.95));
+                                color: rgba(255,255,255,.95);
+                                font-weight: 800;
+                                cursor: pointer;
+                                box-shadow: 0 10px 30px rgba(0,0,0,.25);
+                            ">
+                        ログイン
+                    </button>
+
+                    <!-- Footer -->
+                    <div style="
+                        margin-top: 12px;
+                        font-size: 12px;
+                        line-height: 1.6;
+                        text-align: center;
+                        color: rgba(255,255,255,.65);
+                    ">
+                        <div>
+                            ※ 本システムはデモ環境です。ログイン情報がない場合は管理者へご連絡ください。
+                        </div>
+                        <div style="opacity: 0.7; margin-top: 4px;">
+                            v0.1 demo
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
     </div>
-    <div>
-        <label>Role</label>
-        <select asp-for="Input.Role">
-            <option value="Leader">Leader</option>
-            <option value="Worker">Worker</option>
-        </select>
-    </div>
-    <button type="submit">Sign in</button>
-</form>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const passwordInput = document.getElementById("passwordInput");
+            const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+            const form = document.getElementById("loginForm");
+            const submitBtn = document.getElementById("submitBtn");
+            const emailInput = document.getElementById("email");
+
+        togglePasswordBtn.addEventListener("click", function () {
+            const isPassword = passwordInput.type === "password";
+            passwordInput.type = isPassword ? "text" : "password";
+            togglePasswordBtn.textContent = isPassword ? "🙈" : "👁";
+            togglePasswordBtn.setAttribute(
+                "aria-label",
+                isPassword ? "パスワードを非表示" : "パスワードを表示"
+            );
+        });
+
+            form.addEventListener("submit", function () {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "ログイン中…";
+                submitBtn.style.cursor = "not-allowed";
+                submitBtn.style.opacity = "0.85";
+            });
+
+            emailInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    form.requestSubmit();
+                }
+            });
+
+            passwordInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    form.requestSubmit();
+                }
+            });
+        })();
+    </script>
+}

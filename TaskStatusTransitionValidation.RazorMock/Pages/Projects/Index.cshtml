@@ -4,14 +4,189 @@
     ViewData["Title"] = "Projects";
 }
 
-<h2>Projects</h2>
-<p>Signed in as: <b>@Model.Me.DisplayName</b> (@Model.Me.Role)</p>
+<div class="projects-page">
+    <div id="pageLoader" class="fullscreen-loading" aria-live="polite" aria-busy="true">
+        <div class="fullscreen-loading__panel">
+            <div class="fullscreen-loading__row">
+                <div class="spinner" aria-hidden="true"></div>
+                <div class="fullscreen-loading__title">読み込み中…</div>
+            </div>
+            <div class="fullscreen-loading__sub">
+                案件情報を取得しています
+            </div>
+        </div>
+    </div>
 
-<ul>
-    @foreach (var p in Model.Projects)
-    {
-        <li>
-            <a asp-page="/Projects/Details" asp-route-id="@p.Id">@p.Name</a>
-        </li>
-    }
-</ul>
+    <div class="projects-container">
+        <header class="projects-header">
+            <div>
+                <div class="projects-badge">
+                    <span class="projects-badge__dot"></span>
+                    小規模チーム向け 案件・タスク管理
+                </div>
+
+                <h1 class="projects-title">案件一覧</h1>
+
+                <p class="projects-subtitle">
+                    参画中の案件を確認し、タスクの状態遷移ルールをチェックできます。
+                </p>
+            </div>
+
+            <div class="projects-userbox">
+                <div class="user-chip">
+                    @Model.Me.DisplayName
+                    <span class="user-chip__role">(@Model.Me.Role)</span>
+                </div>
+
+                <form method="post" asp-page="/Logout">
+                    <button type="submit" class="btn btn-dark js-show-loader">ログアウト</button>
+                </form>
+            </div>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <section class="alert-error" role="alert">
+                @Model.ErrorMessage
+            </section>
+        }
+
+        <section class="card">
+            <div class="card-topbar">
+                <div class="card-topbar__summary">
+                    @Model.ActiveCount 件
+                </div>
+
+                <div class="card-topbar__actions">
+                    @if (Model.IsLeader)
+                    {
+                        <a asp-page="/Projects/Create" class="btn btn-success js-show-loader">＋ 新規作成</a>
+                    }
+
+                    <a asp-page="/Projects/Index"
+                       asp-route-q="@Model.Q"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="btn btn-dark js-show-loader">
+                        再読み込み
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                @if (Model.AllProjects.Count > 0)
+                {
+                    <form method="get" class="searchbar">
+                        <div class="searchbar__grow">
+                            <input asp-for="Q"
+                                   class="input"
+                                   placeholder="プロジェクト名で検索" />
+                        </div>
+
+                        <button type="submit" class="btn btn-dark js-show-loader">検索</button>
+
+                        <a asp-page="/Projects/Index" class="btn btn-dark js-show-loader">クリア</a>
+
+                        <select asp-for="PageSize" class="select" onchange="this.form.submit()">
+                            <option value="5">5件/ページ</option>
+                            <option value="10">10件/ページ</option>
+                            <option value="20">20件/ページ</option>
+                        </select>
+
+                        <div class="searchbar__count">
+                            @(string.IsNullOrWhiteSpace(Model.Q)
+                                                    ? $"表示: {Model.TotalActiveFiltered} 件"
+                                                    : $"検索結果: {Model.TotalActiveFiltered} 件")
+                    </div>
+
+                        <input type="hidden" asp-for="Page" value="1" />
+                    </form>
+                                }
+
+                @if (Model.AllProjects.Count == 0)
+                {
+                    <div class="empty-box">
+                        <p class="empty-box__title">案件がまだありません</p>
+                        <p class="empty-box__text">
+                            モックデータが空か、参照対象が存在しません。
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="project-list">
+                        @foreach (var p in Model.ActivePageItems)
+                        {
+                            <div class="project-row">
+                                <div class="project-row__main">
+                                    <a asp-page="/Projects/Details"
+                                       asp-route-id="@p.Id"
+                                       class="project-link js-show-loader">
+                                        @p.Name
+                                    </a>
+                                    <div class="project-meta">Project ID: @p.Id</div>
+                                </div>
+
+                                <span class="status-pill status-pill--active">表示中</span>
+                            </div>
+                        }
+
+                        @if (Model.TotalPages > 1)
+                        {
+                            <div class="pager">
+                                <a asp-page="/Projects/Index"
+                                   asp-route-q="@Model.Q"
+                                   asp-route-page="@(Model.SafePage - 1)"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   class="btn btn-dark js-show-loader @(Model.SafePage <= 1 ? "is-disabled" : "")"
+                                   aria-disabled="@(Model.SafePage <= 1)">
+                                    前へ
+                                </a>
+
+                                <div class="pager__text">@Model.SafePage / @Model.TotalPages</div>
+
+                                <a asp-page="/Projects/Index"
+                                   asp-route-q="@Model.Q"
+                                   asp-route-page="@(Model.SafePage + 1)"
+                                   asp-route-pageSize="@Model.PageSize"
+                                   class="btn btn-dark js-show-loader @(Model.SafePage >= Model.TotalPages ? "is-disabled" : "")"
+                                   aria-disabled="@(Model.SafePage >= Model.TotalPages)">
+                                    次へ
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <p class="footnote">
+                    ※ モック版のため、現時点では画面側で検索・ページングしています。
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const loader = document.getElementById("pageLoader");
+            if (!loader) return;
+
+            window.addEventListener("load", () => {
+                loader.classList.add("is-hidden");
+            });
+
+            document.querySelectorAll(".js-show-loader").forEach(el => {
+                el.addEventListener("click", () => {
+                    if (el.classList.contains("is-disabled")) return;
+                    loader.classList.remove("is-hidden");
+                });
+            });
+
+            document.querySelectorAll("form").forEach(form => {
+                form.addEventListener("submit", () => {
+                    loader.classList.remove("is-hidden");
+                });
+            });
+        })();
+    </script>
+}
