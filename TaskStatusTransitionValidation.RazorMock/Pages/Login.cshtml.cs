@@ -31,7 +31,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        Response.Cookies.Append("token", result.Token, new CookieOptions
+        Response.Cookies.Append("auth_token", result.Token, new CookieOptions
         {
             HttpOnly = true,
             Secure = false, // HTTPSâªÇµÇΩÇÁ true êÑèß

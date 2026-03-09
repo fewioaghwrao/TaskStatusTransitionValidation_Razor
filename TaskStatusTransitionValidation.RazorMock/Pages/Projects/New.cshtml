@@ -1,0 +1,83 @@
+﻿@page "/Projects/New"
+@model TaskStatusTransitionValidation.RazorMock.Pages.Projects.NewModel
+
+<main style="min-height:100vh; padding:16px; background:#121212; color:#e5e7eb;">
+    <div style="max-width:720px; margin:28px auto;">
+        <header style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+                <div>
+                    <h1 style="margin:0; font-size:24px; font-weight:800;">案件新規作成</h1>
+                    <p style="margin:6px 0 0; color:#9ca3af; font-size:13px; line-height:1.6;">
+                        プロジェクト名を入力して作成します（Leaderのみ）。
+                    </p>
+                </div>
+
+                <a asp-page="/Projects/Index"
+                   style="padding:10px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#171717; color:#e5e7eb; text-decoration:none; font-size:12px; white-space:nowrap;">
+                    ← 一覧へ戻る
+                </a>
+            </div>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <section role="alert"
+                     style="margin-bottom:12px; padding:12px 14px; border-radius:14px; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.25); color:#fee2e2; white-space:pre-wrap; line-height:1.6; font-size:13px;">
+                @Model.ErrorMessage
+            </section>
+        }
+
+        <section style="border-radius:16px; border:1px solid #2a2a2a; background:#1a1a1a; box-shadow:0 16px 50px rgba(0,0,0,.35); overflow:hidden;">
+            <div style="padding:14px; border-bottom:1px solid #2a2a2a;">
+                <div style="color:#cbd5e1; font-size:13px;">
+                    @if (Model.Me is not null)
+                    {
+                        @:ログイン中: @(string.IsNullOrWhiteSpace(Model.Me.DisplayName) ? Model.Me.Email : Model.Me.DisplayName)（@Model.Me.Role）
+                    }
+                    else
+                    {
+                        @:ログイン情報を取得できませんでした
+                    }
+                </div>
+            </div>
+
+            <form method="post" style="padding:14px; display:grid; gap:12px;"
+                  onsubmit="return confirm('案件（プロジェクト）を作成します。\n\nプロジェクト名: ' + document.getElementById('project-name').value + '\n\nよろしいですか？');">
+
+                @if (Model.Me is not null && !Model.IsLeader)
+                {
+                    <div style="padding:12px 14px; border-radius:14px; background:rgba(59,130,246,.10); border:1px solid rgba(59,130,246,.25); color:#dbeafe; font-size:13px; line-height:1.6;">
+                        この画面はリーダーのみ作成できます。必要であれば管理者へご連絡ください。
+                    </div>
+                }
+
+                <div>
+                    <label asp-for="Input.Name" style="display:block; font-size:12px; color:#cbd5e1;">プロジェクト名</label>
+                    <input asp-for="Input.Name"
+                           id="project-name"
+                           placeholder="例）社内ツール刷新、A社向け開発 など"
+                           disabled="@(Model.Me is null || !Model.IsLeader)"
+                           style="width:100%; margin-top:6px; padding:12px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#171717; color:#e5e7eb; outline:none;" />
+                    <span asp-validation-for="Input.Name" style="color:#fca5a5; font-size:12px;"></span>
+
+                    <div style="margin-top:6px; color:#9ca3af; font-size:12px; line-height:1.6;">
+                        ※ 作成後は一覧から詳細へ移動できます。
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                    <a asp-page="/Projects/Index"
+                       style="padding:10px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#171717; color:#e5e7eb; text-decoration:none; font-size:12px;">
+                        キャンセル
+                    </a>
+
+                    <button type="submit"
+                            disabled="@(Model.Me is null || !Model.IsLeader)"
+                            style="padding:10px 12px; border-radius:12px; border:1px solid rgba(16,185,129,.28); background:rgba(16,185,129,.14); color:#d1fae5; cursor:pointer; font-size:12px; font-weight:800;">
+                        作成する
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>

@@ -32,7 +32,7 @@ public class IndexModel(ApiClient apiClient, IMeProvider meProvider) : PageModel
 
     public string? ErrorMessage { get; private set; }
 
-    public async Task OnGetAsync(CancellationToken cancellationToken)
+    public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -40,24 +40,23 @@ public class IndexModel(ApiClient apiClient, IMeProvider meProvider) : PageModel
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                SetErrorState("認証トークンが見つかりません。先にログインしてください。");
-                return;
+                return RedirectToPage("/Login");
             }
 
             var meResponse = await meProvider.GetMeAsync(token, cancellationToken);
             if (meResponse is null)
             {
                 SetErrorState("ユーザー情報の取得に失敗しました。");
-                return;
+                return RedirectToPage("/Login");
             }
 
             Me = new MeDto
             {
-                Id =0,
+                Id = 0,
                 Name = meResponse.DisplayName ?? string.Empty,
                 DisplayName = meResponse.DisplayName ?? string.Empty,
                 Email = meResponse.Email ?? string.Empty,
-                Role = meResponse.Role == UserRole.Leader
+                Role = string.Equals(meResponse.Role, "Leader", StringComparison.OrdinalIgnoreCase)
                     ? UserRole.Leader
                     : UserRole.Worker
             };
@@ -102,10 +101,12 @@ public class IndexModel(ApiClient apiClient, IMeProvider meProvider) : PageModel
                 .ToList();
 
             ArchivedProjects = archivedProjects;
+            return Page();
         }
-        catch (Exception ex)
+        catch
         {
-            SetErrorState(ex.Message);
+            Response.Cookies.Delete("auth_token");
+            return RedirectToPage("/Login");
         }
     }
 

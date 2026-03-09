@@ -1,0 +1,60 @@
+﻿@page "/Projects/{projectId:int}/Tasks/New"
+@model TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks.NewModel
+
+<h2>タスク新規作成</h2>
+
+@if (Model.ErrorMessage != null)
+{
+    <div style="color:red">@Model.ErrorMessage</div>
+}
+
+<form method="post">
+
+    <input type="hidden" asp-for="Input.ProjectId" value="@Model.ProjectId" />
+
+    <div>
+        <label>タイトル</label>
+        <input asp-for="Input.Title" />
+    </div>
+
+    <div>
+        <label>説明</label>
+        <textarea asp-for="Input.Description"></textarea>
+    </div>
+
+    <div>
+        <label>期限</label>
+        <input asp-for="Input.DueDate" type="date" />
+    </div>
+
+    <div>
+        <label>優先度</label>
+        <select asp-for="Input.Priority">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+        </select>
+    </div>
+
+    @if (Model.IsLeader)
+    {
+        <div>
+            <label>担当者</label>
+            <select asp-for="Input.AssigneeUserId">
+
+                <option value="">未割当</option>
+
+                @foreach (var m in Model.Members)
+                {
+                    <option value="@m.UserId">
+                        @m.DisplayName (@m.Email)
+                    </option>
+                }
+
+            </select>
+        </div>
+    }
+
+    <button type="submit">作成</button>
+
+</form>

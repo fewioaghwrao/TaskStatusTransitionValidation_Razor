@@ -8,14 +8,14 @@ public sealed class InMemoryTaskStore : ITaskStore
     [
         new ProjectDto
         {
-            Id =  Guid.NewGuid(),
+            Id = 0,
             Name = "案件A",
             Description = "A",
             IsArchived = true
         },
         new ProjectDto
         {
-            Id = Guid.NewGuid(),
+            Id = 1,
             Name = "案件B",
             Description = "B",
             IsArchived = true

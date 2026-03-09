@@ -71,4 +71,73 @@ public class ApiClient
 
         return data ?? [];
     }
+
+    public async Task<IReadOnlyList<ProjectMemberDto>> GetProjectMembersAsync(
+    string? token,
+    int projectId,
+    CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/projects/{projectId}/members");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        if (!res.IsSuccessStatusCode)
+            return [];
+
+        await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
+
+        var data = await JsonSerializer.DeserializeAsync<List<ProjectMemberDto>>(stream, JsonOptions, cancellationToken);
+
+        return data ?? [];
+    }
+
+    public async Task<bool> CreateTaskAsync(
+    string? token,
+    TaskCreateRequest request,
+    CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/tasks");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var json = JsonSerializer.Serialize(request);
+
+        req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        return res.IsSuccessStatusCode;
+    }
+
+    public async Task<ProjectResponse?> CreateProjectAsync(
+    string? token,
+    ProjectCreateRequest request,
+    CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/projects");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var json = JsonSerializer.Serialize(request);
+        req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        if (!res.IsSuccessStatusCode)
+            return null;
+
+        await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonSerializer.DeserializeAsync<ProjectResponse>(stream, JsonOptions, cancellationToken);
+    }
 }
