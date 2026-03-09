@@ -1,0 +1,21 @@
+﻿@page
+@{
+    ViewData["Title"] = "ページが見つかりません";
+}
+
+<section class="error-page">
+    <div class="error-card">
+        <div class="error-icon" aria-hidden="true">🔍</div>
+        <p class="error-label">404 Not Found</p>
+        <h1 class="error-title">ページが見つかりません。</h1>
+        <p class="error-description">
+            指定されたページは削除されたか、URL が変更されている可能性があります。<br />
+            URL をご確認いただくか、トップページからお探しください。
+        </p>
+
+        <div class="error-actions">
+            <a asp-page="/Index" class="btn-primary">トップへ戻る</a>
+            <button type="button" class="btn-secondary" onclick="history.back()">前の画面へ戻る</button>
+        </div>
+    </div>
+</section>

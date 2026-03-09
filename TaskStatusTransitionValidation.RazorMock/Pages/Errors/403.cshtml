@@ -1,0 +1,21 @@
+﻿@page
+@{
+    ViewData["Title"] = "アクセス権限がありません";
+}
+
+<section class="error-page">
+    <div class="error-card">
+        <div class="error-icon" aria-hidden="true">🔒</div>
+        <p class="error-label">403 Forbidden</p>
+        <h1 class="error-title">このページにアクセスする権限がありません。</h1>
+        <p class="error-description">
+            ログイン状態または権限設定により、このページを表示できません。<br />
+            必要に応じてログインし直すか、管理者へお問い合わせください。
+        </p>
+
+        <div class="error-actions">
+            <a asp-page="/Index" class="btn-primary">トップへ戻る</a>
+            <a asp-page="/Login" class="btn-secondary">ログイン画面へ</a>
+        </div>
+    </div>
+</section>

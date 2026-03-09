@@ -1,0 +1,21 @@
+﻿@page
+@{
+    ViewData["Title"] = "ログインが必要です";
+}
+
+<section class="error-page">
+    <div class="error-card">
+        <div class="error-icon" aria-hidden="true">🔑</div>
+        <p class="error-label">401 Unauthorized</p>
+        <h1 class="error-title">このページを表示するにはログインが必要です。</h1>
+        <p class="error-description">
+            セッションの有効期限が切れているか、認証情報が不足しています。<br />
+            ログイン画面から再度サインインしてください。
+        </p>
+
+        <div class="error-actions">
+            <a asp-page="/Login" class="btn-primary">ログイン画面へ</a>
+            <a asp-page="/Index" class="btn-secondary">トップへ戻る</a>
+        </div>
+    </div>
+</section>

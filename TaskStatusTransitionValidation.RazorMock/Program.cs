@@ -12,7 +12,7 @@ builder.Services.AddHttpClient<ApiClient>(client =>
 });
 
 builder.Services.AddScoped<IMeProvider, ApiMeProvider>();
-builder.Services.AddScoped<ITaskStore, InMemoryTaskStore>(); // ‚±‚ê‚ÍŠù‘¶‚ÌÀ‘•‚É‡‚í‚¹‚é
+builder.Services.AddScoped<ITaskStore, InMemoryTaskStore>();
 
 var app = builder.Build();
 
@@ -20,6 +20,12 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
+
+app.UseStatusCodePagesWithReExecute("/Errors/{0}");
 
 app.UseStaticFiles();
 app.UseRouting();
