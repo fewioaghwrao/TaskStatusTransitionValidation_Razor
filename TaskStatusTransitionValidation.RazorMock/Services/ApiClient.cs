@@ -140,4 +140,107 @@ public class ApiClient
         await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
         return await JsonSerializer.DeserializeAsync<ProjectResponse>(stream, JsonOptions, cancellationToken);
     }
+
+    public async Task<ProjectDetailResponse?> GetProjectByIdAsync(
+    string? token,
+    int projectId,
+    CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/projects/{projectId}");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        if (!res.IsSuccessStatusCode)
+            return null;
+
+        await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonSerializer.DeserializeAsync<ProjectDetailResponse>(stream, JsonOptions, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<TaskResponse>> GetTasksByProjectIdAsync(
+        string? token,
+        int projectId,
+        CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/projects/{projectId}/tasks");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        if (!res.IsSuccessStatusCode)
+            return [];
+
+        await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
+        var data = await JsonSerializer.DeserializeAsync<List<TaskResponse>>(stream, JsonOptions, cancellationToken);
+
+        return data ?? [];
+    }
+
+    public async Task<bool> UpdateTaskAsync(
+        string? token,
+        int taskId,
+        TaskUpdateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/tasks/{taskId}");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var json = JsonSerializer.Serialize(request);
+        req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        return res.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> ArchiveProjectAsync(
+        string? token,
+        int projectId,
+        CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/projects/{projectId}");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        return res.IsSuccessStatusCode;
+    }
+
+    public async Task<TaskResponse?> GetTaskByIdAsync(
+    string? token,
+    int taskId,
+    CancellationToken cancellationToken = default)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/tasks/{taskId}");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        using var res = await _http.SendAsync(req, cancellationToken);
+
+        if (!res.IsSuccessStatusCode)
+            return null;
+
+        await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonSerializer.DeserializeAsync<TaskResponse>(stream, JsonOptions, cancellationToken);
+    }
 }

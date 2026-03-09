@@ -1,0 +1,517 @@
+﻿@page "/Projects/{projectId:int}/Tasks"
+@model TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks.IndexModel
+@{
+    ViewData["Title"] = "Project Tasks";
+}
+
+<div class="tasks-page">
+    <div id="pageLoader" class="fullscreen-loading" aria-live="polite" aria-busy="true">
+        <div class="fullscreen-loading__panel">
+            <div class="fullscreen-loading__row">
+                <div class="spinner" aria-hidden="true"></div>
+                <div class="fullscreen-loading__title">読み込み中…</div>
+            </div>
+            <div class="fullscreen-loading__sub">
+                タスク情報を取得しています
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .input {
+            width: 240px;
+            max-width: 100%;
+        }
+
+        @@media (max-width: 768px) {
+            .input,
+            .select {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="~/css/projects-tasks.css" asp-append-version="true" />
+
+    <div class="tasks-container">
+        <header class="tasks-header">
+            <div class="tasks-header__left">
+                <div class="tasks-header__top">
+                    <a asp-page="/Projects/Index" class="back-link js-show-loader">← 戻る</a>
+
+                    <div class="badge-chip">
+                        <span class="badge-chip__dot" aria-hidden="true"></span>
+                        小規模チーム向け 案件・タスク管理
+                    </div>
+
+                    @if (Model.Me is not null)
+                    {
+                        <div class="user-chip" title="@Model.Me.Email">
+                            <span class="user-chip__dot @(Model.IsLeader ? "user-chip__dot--leader" : "user-chip__dot--worker")" aria-hidden="true"></span>
+                            @Model.Me.DisplayName（@(Model.IsLeader ? "Leader" : "Worker")）
+                        </div>
+                    }
+                </div>
+
+                <h1 class="tasks-title">@Model.Title / タスク</h1>
+
+                <p class="tasks-subtitle">
+                    状態遷移チェックは API 側で検証され、NG の場合はエラーが表示されます。
+                </p>
+            </div>
+
+            <div class="tasks-actions">
+                @if (Model.IsLeader)
+                {
+                    <form method="post"
+                          asp-page-handler="ArchiveProject"
+                          onsubmit="
+            if (!confirm('この案件をアーカイブ（削除扱い）します。よろしいですか？')) return false;
+            document.getElementById('pageLoader')?.classList.remove('is-hidden');
+            return true;
+          ">
+                        <input type="hidden" name="projectId" value="@Model.ProjectId" />
+                        <button type="submit" class="btn btn-danger">案件削除（アーカイブ）</button>
+                    </form>
+                }
+
+                @if (Model.CanCreateTask)
+                {
+                    <a href="/Projects/@Model.ProjectId/Tasks/New" class="btn btn-primary js-show-loader">＋ タスク作成</a>
+                }
+
+                <button type="button"
+                        class="btn btn-dark"
+                        id="openCsvExportDialogButton"
+                        @(Model.TotalFiltered == 0 ? "disabled" : null)>
+                    ⭳ CSV出力（全件）
+                </button>
+
+                <partial name="_CsvExportDialog" model="Model" />
+
+                <a asp-page="/Projects/Tasks/Index"
+                   asp-route-projectId="@Model.ProjectId"
+                   asp-route-q="@Model.Q"
+                   asp-route-statusF="@Model.StatusF"
+                   asp-route-prioF="@Model.PrioF"
+                   asp-route-dueF="@Model.DueF"
+                   asp-route-pageNo="@Model.SafePage"
+                   asp-route-pageSize="@Model.PageSize"
+                   class="btn btn-dark js-show-loader">
+                    再読込
+                </a>
+            </div>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
+        {
+            <section class="alert-success" role="status">
+                @Model.OperationMessage
+            </section>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <section class="alert-error" role="alert">
+                @Model.ErrorMessage
+            </section>
+        }
+
+        <section class="summary-grid">
+            <a asp-page="/Projects/Tasks/Index"
+               asp-route-projectId="@Model.ProjectId"
+               asp-route-dueF="Overdue"
+               asp-route-pageNo="1"
+               asp-route-pageSize="@Model.PageSize"
+               class="summary-card-link summary-card-link--danger js-show-loader">
+                <div class="summary-card__label">期限切れ</div>
+                <div class="summary-card__value">@Model.OverdueCount</div>
+                <div class="summary-card__sub">クリックで絞り込み</div>
+            </a>
+
+            <a asp-page="/Projects/Tasks/Index"
+               asp-route-projectId="@Model.ProjectId"
+               asp-route-dueF="DueSoon"
+               asp-route-pageNo="1"
+               asp-route-pageSize="@Model.PageSize"
+               class="summary-card-link summary-card-link--warning js-show-loader">
+                <div class="summary-card__label">近日期限（7日以内）</div>
+                <div class="summary-card__value">@Model.DueSoonCount</div>
+                <div class="summary-card__sub">クリックで絞り込み</div>
+            </a>
+
+            <div class="summary-card summary-card--info">
+                <div class="summary-card__label">進捗サマリー</div>
+
+                <div class="summary-pills">
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       asp-route-statusF="ToDo"
+                       asp-route-pageNo="1"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="summary-pill js-show-loader">
+                        未着手：<strong>@Model.ToDoCount</strong>
+                    </a>
+
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       asp-route-statusF="Doing"
+                       asp-route-pageNo="1"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="summary-pill js-show-loader">
+                        作業中：<strong>@Model.DoingCount</strong>
+                    </a>
+
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       asp-route-statusF="Blocked"
+                       asp-route-pageNo="1"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="summary-pill js-show-loader">
+                        ブロック中：<strong>@Model.BlockedCount</strong>
+                    </a>
+
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       asp-route-statusF="Done"
+                       asp-route-pageNo="1"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="summary-pill js-show-loader">
+                        完了：<strong>@Model.DoneCount</strong>
+                    </a>
+
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       class="summary-pill js-show-loader">
+                        リセット
+                    </a>
+                </div>
+
+                <div class="summary-card__sub">
+                    現在の期限フィルタ：<strong>@Model.DueF</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-topbar">
+                <div class="card-topbar__summary">
+                    全 @Model.TotalFiltered 件（絞り込み後） / @Model.PageSize 件表示
+                </div>
+
+                <div class="card-topbar__pager">
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       asp-route-q="@Model.Q"
+                       asp-route-statusF="@Model.StatusF"
+                       asp-route-prioF="@Model.PrioF"
+                       asp-route-dueF="@Model.DueF"
+                       asp-route-pageNo="@(Model.SafePage - 1)"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="btn btn-dark js-show-loader @(Model.SafePage <= 1 ? "is-disabled" : "")"
+                       aria-disabled="@(Model.SafePage <= 1)">
+                        ← 前へ
+                    </a>
+
+                    <div class="pager-text">@Model.SafePage / @Model.TotalPages</div>
+
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       asp-route-q="@Model.Q"
+                       asp-route-statusF="@Model.StatusF"
+                       asp-route-prioF="@Model.PrioF"
+                       asp-route-dueF="@Model.DueF"
+                       asp-route-pageNo="@(Model.SafePage + 1)"
+                       asp-route-pageSize="@Model.PageSize"
+                       class="btn btn-dark js-show-loader @(Model.SafePage >= Model.TotalPages ? "is-disabled" : "")"
+                       aria-disabled="@(Model.SafePage >= Model.TotalPages)">
+                        次へ →
+                    </a>
+                </div>
+            </div>
+
+            <form method="get" class="filter-form js-show-loader-form">
+                <input type="hidden" name="projectId" value="@Model.ProjectId" />
+                <input type="hidden" name="pageNo" value="1" />
+
+                <div class="filter-form__grow">
+                    <input asp-for="Q" class="input" placeholder="検索（タイトル・説明）" />
+                </div>
+
+                <select asp-for="StatusF" class="select">
+                    <option value="All">状態：すべて</option>
+                    <option value="ToDo">未着手（ToDo）</option>
+                    <option value="Doing">作業中（Doing）</option>
+                    <option value="Blocked">ブロック中（Blocked）</option>
+                    <option value="Done">完了（Done）</option>
+                </select>
+
+                <select asp-for="PrioF" class="select">
+                    <option value="All">優先度：すべて</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+
+                <select asp-for="DueF" class="select">
+                    <option value="All">期限：すべて</option>
+                    <option value="Overdue">期限切れ</option>
+                    <option value="DueSoon">近日期限</option>
+                </select>
+
+                <select asp-for="PageSize" class="select">
+                    <option value="5">5件/ページ</option>
+                    <option value="10">10件/ページ</option>
+                    <option value="20">20件/ページ</option>
+                </select>
+
+                <button type="submit" class="btn btn-dark">検索</button>
+
+                <a asp-page="/Projects/Tasks/Index"
+                   asp-route-projectId="@Model.ProjectId"
+                   class="btn btn-dark js-show-loader">
+                    クリア
+                </a>
+
+                <div class="filter-form__count">
+                    表示: @Model.TotalFiltered 件
+                </div>
+            </form>
+
+            <div class="table-wrap">
+                <table class="task-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>タイトル</th>
+                            <th>期限</th>
+                            <th>優先度</th>
+                            <th>状態</th>
+                            <th>操作（状態変更）</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.PageItems.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="empty-box">
+                                    タスクがありません（または絞り込み条件に一致しません）。
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var t in Model.PageItems)
+                            {
+                                <tr>
+                                    <td>@t.TaskId</td>
+                                    <td>
+                                        <div>
+                                            <a href="/Projects/@Model.ProjectId/Tasks/@t.TaskId" class="task-link js-show-loader">
+                                                @t.Title
+                                            </a>
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(t.Description))
+                                        {
+                                            <div class="task-desc">@t.Description</div>
+                                        }
+                                    </td>
+                                    <td>@Model.FormatDate(t.DueDate)</td>
+                                    <td>
+                                        <span class="pill @Model.GetPriorityCssClass(t.Priority)">
+                                            @t.Priority
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="pill @Model.GetStatusCssClass(t.Status)">
+                                            @Model.StatusLabelJa(t.Status)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form method="post" asp-page-handler="ChangeStatus" class="row-form js-show-loader-form">
+                                            <input type="hidden" name="projectId" value="@Model.ProjectId" />
+                                            <input type="hidden" name="taskId" value="@t.TaskId" />
+                                            <input type="hidden" name="q" value="@Model.Q" />
+                                            <input type="hidden" name="statusF" value="@Model.StatusF" />
+                                            <input type="hidden" name="prioF" value="@Model.PrioF" />
+                                            <input type="hidden" name="dueF" value="@Model.DueF" />
+                                            <input type="hidden" name="pageNo" value="@Model.SafePage" />
+                                            <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+                                            <select name="nextStatus"
+                                                    class="select"
+                                                    @(Model.IsTaskFixed(t.Status) ? "disabled" : null)>
+                                                @foreach (var s in Model.AllStatuses)
+                                                {
+                                                    var selected = string.Equals(s, t.Status, StringComparison.OrdinalIgnoreCase);
+                                                    var disabled = !Model.CanTransition(t.Status, s);
+
+                                                    if (selected)
+                                                    {
+                                                        <option value="@s" selected="selected" disabled="@disabled">
+                                                            @Model.StatusLabelJa(s)（@s）
+                                                        </option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@s" disabled="@disabled">
+                                                            @Model.StatusLabelJa(s)（@s）
+                                                        </option>
+                                                    }
+                                                }
+                                            </select>
+
+                                            <button type="submit"
+                                                    class="btn btn-dark"
+                                                    @(Model.IsTaskFixed(t.Status) ? "disabled" : null)>
+                                                更新
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-list">
+                @if (Model.PageItems.Count == 0)
+                {
+                    <div class="empty-box">
+                        タスクがありません（または絞り込み条件に一致しません）。
+                    </div>
+                }
+                else
+                {
+                    @foreach (var t in Model.PageItems)
+                    {
+                        <div class="task-card">
+                            <div class="task-card__top">
+                                <div>
+                                    <div class="task-card__meta">ID: @t.TaskId</div>
+                                    <div style="margin-top:4px;">
+                                        <a href="/Projects/@Model.ProjectId/Tasks/@t.TaskId" class="task-link js-show-loader">
+                                            @t.Title
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <span class="pill @Model.GetStatusCssClass(t.Status)">
+                                    @Model.StatusLabelJa(t.Status)
+                                </span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(t.Description))
+                            {
+                                <div class="task-card__body">@t.Description</div>
+                            }
+
+                            <div class="task-card__bottom">
+                                <div class="task-card__meta">
+                                    期限: <span style="color:#e5e7eb">@Model.FormatDate(t.DueDate)</span>
+                                </div>
+
+                                <span class="pill @Model.GetPriorityCssClass(t.Priority)">
+                                    @t.Priority
+                                </span>
+                            </div>
+
+                            <div class="task-card__bottom">
+                                <form method="post" asp-page-handler="ChangeStatus" class="row-form js-show-loader-form" style="width:100%;">
+                                    <input type="hidden" name="projectId" value="@Model.ProjectId" />
+                                    <input type="hidden" name="taskId" value="@t.TaskId" />
+                                    <input type="hidden" name="q" value="@Model.Q" />
+                                    <input type="hidden" name="statusF" value="@Model.StatusF" />
+                                    <input type="hidden" name="prioF" value="@Model.PrioF" />
+                                    <input type="hidden" name="dueF" value="@Model.DueF" />
+                                    <input type="hidden" name="pageNo" value="@Model.SafePage" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+                                    <select name="nextStatus"
+                                            class="select"
+                                            style="width:100%;"
+                                            @(Model.IsTaskFixed(t.Status) ? "disabled" : null)>
+                                        @foreach (var s in Model.AllStatuses)
+                                        {
+                                            var selected = string.Equals(s, t.Status, StringComparison.OrdinalIgnoreCase);
+                                            var disabled = !Model.CanTransition(t.Status, s);
+
+                                            if (selected)
+                                            {
+                                                <option value="@s" selected="selected" disabled="@disabled">
+                                                    @Model.StatusLabelJa(s)（@s）
+                                                </option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@s" disabled="@disabled">
+                                                    @Model.StatusLabelJa(s)（@s）
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+
+                                    <button type="submit"
+                                            class="btn btn-dark"
+                                            @(Model.IsTaskFixed(t.Status) ? "disabled" : null)>
+                                        更新
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            @if (Model.TotalFiltered > 0)
+            {
+                <div class="bottom-pager">
+                    <div class="pager-text" style="min-width:auto;text-align:left;">
+                        表示範囲：@Model.DisplayStart〜@Model.DisplayEnd / @Model.TotalFiltered
+                    </div>
+
+                    <div class="card-topbar__pager">
+                        <a asp-page="/Projects/Tasks/Index"
+                           asp-route-projectId="@Model.ProjectId"
+                           asp-route-q="@Model.Q"
+                           asp-route-statusF="@Model.StatusF"
+                           asp-route-prioF="@Model.PrioF"
+                           asp-route-dueF="@Model.DueF"
+                           asp-route-pageNo="@(Model.SafePage - 1)"
+                           asp-route-pageSize="@Model.PageSize"
+                           class="btn btn-dark js-show-loader @(Model.SafePage <= 1 ? "is-disabled" : "")"
+                           aria-disabled="@(Model.SafePage <= 1)">
+                            ← 前へ
+                        </a>
+
+                        <div class="pager-text">@Model.SafePage / @Model.TotalPages</div>
+
+                        <a asp-page="/Projects/Tasks/Index"
+                           asp-route-projectId="@Model.ProjectId"
+                           asp-route-q="@Model.Q"
+                           asp-route-statusF="@Model.StatusF"
+                           asp-route-prioF="@Model.PrioF"
+                           asp-route-dueF="@Model.DueF"
+                           asp-route-pageNo="@(Model.SafePage + 1)"
+                           asp-route-pageSize="@Model.PageSize"
+                           class="btn btn-dark js-show-loader @(Model.SafePage >= Model.TotalPages ? "is-disabled" : "")"
+                           aria-disabled="@(Model.SafePage >= Model.TotalPages)">
+                            次へ →
+                        </a>
+                    </div>
+                </div>
+            }
+        </section>
+
+        <p class="footnote">
+            ※ 状態遷移チェック（ToDo→Doing→Done、Doing→Blocked、Blocked→Doing）を API 側で弾くと、このページにエラーメッセージが表示されます。<br />
+            ※ 完了（Done）のタスクはサーバー側ポリシーで更新不可のため、この画面でも編集を無効化しています。
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/projects-tasks.js" asp-append-version="true"></script>
+}

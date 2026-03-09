@@ -1,0 +1,369 @@
+﻿@page "/Projects/{projectId:int}/Tasks/{taskId:int}"
+@model TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks.TaskDetailModel
+@{
+    ViewData["Title"] = "タスク詳細";
+}
+
+<main class="task-detail-page">
+    <div id="pageLoader"
+         class="fullscreen-loading @(Model.IsBusy ? "is-active" : null)"
+         aria-live="polite"
+         aria-busy="@(Model.IsBusy ? "true" : "false")">
+        <div class="fullscreen-loading__panel">
+            <div class="fullscreen-loading__row">
+                <div class="spinner" aria-hidden="true"></div>
+                <div class="fullscreen-loading__title">処理中…</div>
+            </div>
+            <div class="fullscreen-loading__sub">
+                タスク情報 / ユーザー情報 / メンバー情報を取得しています
+            </div>
+        </div>
+    </div>
+
+    <div class="task-detail-shell">
+        <header class="task-detail-header">
+            <div class="task-detail-header__left">
+                <a asp-page="/Projects/Tasks/Index"
+                   asp-route-projectId="@Model.ProjectId"
+                   class="btn btn-ghost">
+                    ← 一覧へ
+                </a>
+
+                @if (Model.Me is not null)
+                {
+                    <div class="user-chip" title="@Model.Me.Email">
+                        <span class="user-chip__dot"></span>
+                        <span>@Model.Me.DisplayName</span>
+                    </div>
+                }
+            </div>
+
+            <div class="task-detail-header__actions">
+                <a asp-page="/Projects/Tasks/Index"
+                   asp-route-projectId="@Model.ProjectId"
+                   class="btn btn-ghost">
+                    戻る
+                </a>
+
+                <button type="button"
+                        class="btn btn-ghost"
+                        id="resetButton"
+                        @(Model.IsDone ? "disabled" : null)>
+                    リセット
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="openConfirmButton"
+                        @(Model.IsDone ? "disabled" : null)>
+                    保存
+                </button>
+            </div>
+        </header>
+
+        <h1 class="page-title">案件 @Model.ProjectId / タスク @Model.TaskId</h1>
+
+        <p class="page-note">
+            状態遷移は API 側で最終検証されます。Done は終端で更新不可です。
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <section class="alert alert-error" role="alert">
+                @Model.ErrorMessage
+            </section>
+        }
+
+        <section class="card">
+            <div class="card__header">
+                @if (Model.OriginalTask is not null)
+                {
+                    <div class="meta-row">
+                        <div>
+                            担当者:
+                            <span class="meta-strong">@Model.AssigneeLabel(Model.OriginalTask.AssigneeUserId)</span>
+                        </div>
+                        <div>
+                            状態:
+                            <span class="meta-strong">@Model.StatusLabelJa(Model.OriginalTask.Status)（@Model.OriginalTask.Status）</span>
+                        </div>
+                        @if (Model.IsDone)
+                        {
+                            <div class="meta-warning">※ Done は更新不可</div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="meta-row">
+                        <div>データがありません。</div>
+                    </div>
+                }
+            </div>
+
+            <form method="post" id="taskEditForm">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="ProjectId" />
+                <input type="hidden" asp-for="TaskId" />
+                <input type="hidden" asp-for="ConfirmSubmit" id="ConfirmSubmit" />
+
+                <div class="card__body">
+                    <div class="form-group">
+                        <label asp-for="Input.Title">タイトル</label>
+                        <input asp-for="Input.Title" class="form-control" />
+                        <span asp-validation-for="Input.Title" class="validation-message"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.Description">説明</label>
+                        <textarea asp-for="Input.Description"
+                                  class="form-control form-control--textarea"
+                                  rows="5"></textarea>
+                        <span asp-validation-for="Input.Description" class="validation-message"></span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="Input.DueDate">期限（yyyy-MM-dd）</label>
+                            <div class="date-row">
+                                <input asp-for="Input.DueDate"
+                                       type="date"
+                                       class="form-control"
+                                       id="dueDateInput" />
+                                <button type="button"
+                                        class="btn btn-ghost"
+                                        id="showDatePickerButton"
+                                        title="カレンダーを開く">
+                                    📅
+                                </button>
+                            </div>
+                            <div class="field-note">
+                                ※ ブラウザによりカレンダー表示は自動です。📅ボタンは対応時のみ強制表示します。
+                            </div>
+                            <span asp-validation-for="Input.DueDate" class="validation-message"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.Priority">優先度</label>
+                            <select asp-for="Input.Priority" class="form-control" id="priorityInput">
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                            <span asp-validation-for="Input.Priority" class="validation-message"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.Status">状態</label>
+                            <select asp-for="Input.Status" class="form-control" id="statusInput">
+                                <option value="ToDo" disabled="@(!Model.CanSelectStatus("ToDo"))">未着手（ToDo）</option>
+                                <option value="Doing" disabled="@(!Model.CanSelectStatus("Doing"))">作業中（Doing）</option>
+                                <option value="Blocked" disabled="@(!Model.CanSelectStatus("Blocked"))">ブロック中（Blocked）</option>
+                                <option value="Done" disabled="@(!Model.CanSelectStatus("Done"))">完了（Done）</option>
+                            </select>
+                            <div class="field-note">
+                                現在: @(Model.OriginalTask is null ? "-" : $"{Model.StatusLabelJa(Model.OriginalTask.Status)}（{Model.OriginalTask.Status}）")
+                            </div>
+                            <span asp-validation-for="Input.Status" class="validation-message"></span>
+                        </div>
+                    </div>
+
+                    <div class="page-footnote">
+                        ※ 許可遷移：ToDo→Doing、Doing→Done/Blocked、Blocked→Doing（同一状態は可）<br />
+                        ※ API側のポリシーにより、Done のタスクは更新できません。<br />
+                        ※ 担当者は表示のみです。
+                    </div>
+                </div>
+
+                <div class="card__footer">
+                    <a asp-page="/Projects/Tasks/Index"
+                       asp-route-projectId="@Model.ProjectId"
+                       class="btn btn-ghost">
+                        キャンセル
+                    </a>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="openConfirmButtonBottom"
+                            @(Model.IsDone ? "disabled" : null)>
+                        保存
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div id="confirmOverlay" class="modal-overlay" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <div class="modal-card__header">
+                <div id="confirmTitle" class="modal-card__title">更新確認</div>
+                <div class="modal-card__desc">
+                    この内容でタスクを更新します。よろしいですか？
+                </div>
+            </div>
+
+            <div class="modal-card__body">
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <div class="summary-row__label">タイトル</div>
+                        <div class="summary-row__value" id="confirmTitleValue">-</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-row__label">期限</div>
+                        <div class="summary-row__value" id="confirmDueDateValue">-</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-row__label">優先度</div>
+                        <div class="summary-row__value" id="confirmPriorityValue">-</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-row__label">状態</div>
+                        <div class="summary-row__value" id="confirmStatusValue">-</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-row__label">担当</div>
+                        <div class="summary-row__value" id="confirmAssigneeValue">-</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-row__label">説明</div>
+                        <div class="summary-row__value" id="confirmDescriptionValue">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-card__footer">
+                <button type="button" class="btn btn-ghost" id="cancelConfirmButton">
+                    キャンセル
+                </button>
+                <button type="button"
+                        class="btn btn-primary"
+                        id="submitConfirmedButton"
+                        @(Model.IsDone ? "disabled" : null)>
+                    OK（保存）
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (() => {
+            const isDone = @Model.IsDone.ToString().ToLowerInvariant();
+            const form = document.getElementById("taskEditForm");
+            const confirmSubmit = document.getElementById("ConfirmSubmit");
+            const overlay = document.getElementById("confirmOverlay");
+            const pageLoader = document.getElementById("pageLoader");
+
+            const titleInput = document.getElementById("Input_Title");
+            const descriptionInput = document.getElementById("Input_Description");
+            const dueDateInput = document.getElementById("dueDateInput");
+            const priorityInput = document.getElementById("priorityInput");
+            const statusInput = document.getElementById("statusInput");
+
+            const resetButton = document.getElementById("resetButton");
+            const showDatePickerButton = document.getElementById("showDatePickerButton");
+            const cancelConfirmButton = document.getElementById("cancelConfirmButton");
+            const submitConfirmedButton = document.getElementById("submitConfirmedButton");
+
+            const openButtons = [
+                document.getElementById("openConfirmButton"),
+                document.getElementById("openConfirmButtonBottom")
+            ].filter(Boolean);
+
+            const confirmTitleValue = document.getElementById("confirmTitleValue");
+            const confirmDueDateValue = document.getElementById("confirmDueDateValue");
+            const confirmPriorityValue = document.getElementById("confirmPriorityValue");
+            const confirmStatusValue = document.getElementById("confirmStatusValue");
+            const confirmAssigneeValue = document.getElementById("confirmAssigneeValue");
+            const confirmDescriptionValue = document.getElementById("confirmDescriptionValue");
+
+            const original = {
+                title: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.Title)),
+                description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.Description)),
+                dueDate: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.DueDate)),
+                priority: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.Priority)),
+                status: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.Status))
+            };
+
+            function statusLabelJa(s) {
+                switch (s) {
+                    case "ToDo": return "未着手";
+                    case "Doing": return "作業中";
+                    case "Blocked": return "ブロック中";
+                    case "Done": return "完了";
+                    default: return s || "-";
+                }
+            }
+
+            function openConfirm() {
+                if (isDone) {
+                    alert("完了（Done）のタスクは更新できません。");
+                    return;
+                }
+
+                if (!titleInput.value.trim()) {
+                    alert("タイトルは必須です。");
+                    titleInput.focus();
+                    return;
+                }
+
+                confirmTitleValue.textContent = titleInput.value.trim() || "-";
+                confirmDueDateValue.textContent = dueDateInput.value || "-";
+                confirmPriorityValue.textContent = priorityInput.value || "-";
+                confirmStatusValue.textContent = `${statusLabelJa(statusInput.value)}（${statusInput.value || "-"}）`;
+                confirmAssigneeValue.textContent = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                                    Model.OriginalTask is null ? "-" : Model.AssigneeLabel(Model.OriginalTask.AssigneeUserId)
+                            ));
+            confirmDescriptionValue.textContent = descriptionInput.value.trim() || "-";
+
+                overlay.hidden = false;
+            }
+
+            function closeConfirm() {
+                overlay.hidden = true;
+            }
+
+            function resetForm() {
+                titleInput.value = original.title ?? "";
+                descriptionInput.value = original.description ?? "";
+                dueDateInput.value = original.dueDate ?? "";
+                priorityInput.value = original.priority ?? "Medium";
+                statusInput.value = original.status ?? "ToDo";
+            }
+
+            openButtons.forEach(btn => btn.addEventListener("click", openConfirm));
+            resetButton?.addEventListener("click", resetForm);
+
+            cancelConfirmButton?.addEventListener("click", closeConfirm);
+
+            overlay?.addEventListener("click", (e) => {
+                if (e.target === overlay) {
+                    closeConfirm();
+                }
+            });
+
+            submitConfirmedButton?.addEventListener("click", () => {
+                if (pageLoader) {
+                    pageLoader.classList.add("is-active");
+                    pageLoader.setAttribute("aria-busy", "true");
+                }
+
+                confirmSubmit.value = "true";
+                form.submit();
+            });
+
+            showDatePickerButton?.addEventListener("click", () => {
+                if (dueDateInput && typeof dueDateInput.showPicker === "function") {
+                    dueDateInput.showPicker();
+                } else {
+                    dueDateInput?.focus();
+                }
+            });
+        })();
+    </script>
+    <link rel="stylesheet" href="~/css/projects-tasks-detail.css" asp-append-version="true" />
+}
