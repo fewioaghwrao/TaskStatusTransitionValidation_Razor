@@ -1,0 +1,82 @@
+﻿@model TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks.IndexModel
+
+@{
+    var defaultFileBase = Model.SanitizeFileName($"{Model.Title}_tasks_{DateTime.Today:yyyy-MM-dd}");
+}
+
+<div id="csvExportDialog"
+     class="csv-dialog"
+     aria-hidden="true"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="csvExportDialogTitle">
+    <div class="csv-dialog__backdrop" data-csv-close></div>
+
+    <div class="csv-dialog__panel">
+        <div class="csv-dialog__header">
+            <div id="csvExportDialogTitle" class="csv-dialog__title">CSV出力</div>
+
+            <button type="button"
+                    class="csv-dialog__close"
+                    data-csv-close
+                    aria-label="閉じる">
+                ✕
+            </button>
+        </div>
+
+        <div class="csv-dialog__body">
+            <div class="csv-dialog__text">
+                絞り込み後の全件をCSVでダウンロードします。
+            </div>
+
+            <div class="csv-dialog__count">
+                対象件数：<span class="csv-dialog__count-value">@Model.TotalFiltered</span> 件
+            </div>
+
+            <form method="post"
+                  asp-page-handler="ExportCsv"
+                  id="csvExportForm"
+                  class="csv-dialog__form">
+                <input type="hidden" name="projectId" value="@Model.ProjectId" />
+                <input type="hidden" name="q" value="@Model.Q" />
+                <input type="hidden" name="statusF" value="@Model.StatusF" />
+                <input type="hidden" name="prioF" value="@Model.PrioF" />
+                <input type="hidden" name="dueF" value="@Model.DueF" />
+                <input type="hidden" name="pageNo" value="@Model.SafePage" />
+                <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+                <div class="csv-dialog__field">
+                    <div class="csv-dialog__label">ファイル名（.csv は自動付与）</div>
+
+                    <input type="text"
+                           name="fileBaseName"
+                           id="csvFileBaseName"
+                           class="input csv-dialog__input"
+                           value="@defaultFileBase"
+                           placeholder="例: my_tasks_2026-02-27" />
+                </div>
+
+                <div class="csv-dialog__note">
+                    出力列：TaskId / Title / Description / StatusJa / Status / Priority / DueDate / AssigneeDisplayName
+                    <br />
+                    文字コード：UTF-8（Excel対策でBOM付き）
+                </div>
+
+                <div class="csv-dialog__footer">
+                    <button type="button"
+                            class="btn btn-dark"
+                            data-csv-close>
+                        キャンセル
+                    </button>
+
+                    <button type="submit"
+                            id="csvExportSubmitButton"
+                            class="btn btn-primary"
+                            @(Model.TotalFiltered == 0 ? "disabled" : null)>
+                        ダウンロード
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
