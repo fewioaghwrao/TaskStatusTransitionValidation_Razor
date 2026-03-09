@@ -106,8 +106,8 @@
                         {
                             <div class="project-row">
                                 <div class="project-row__main">
-                                    <a asp-page="/Projects/Details"
-                                       asp-route-id="@p.Id"
+                                    <a asp-page="/Projects/Tasks/Index"
+                                       asp-route-projectId="@p.Id"
                                        class="project-link js-show-loader">
                                         @p.Name
                                     </a>
