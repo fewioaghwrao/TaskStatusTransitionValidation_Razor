@@ -1,4 +1,4 @@
-# Task Status Transition Validation – Razor UI
+# 案件タスク管理 Lite – Razor UI
 
 ![CI](https://github.com/fewioaghwrao/TaskStatusTransitionValidation_Razor/actions/workflows/razormock-ci.yml/badge.svg)
 
@@ -118,9 +118,10 @@ Blocked → Doing
 - テスト容易性
 
 を実現しています。
+
 ---
 
-# 📌 Features
+# 📌 機能
 
 このアプリでは以下の機能を実装しています。
 
