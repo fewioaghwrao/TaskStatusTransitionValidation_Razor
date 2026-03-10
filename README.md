@@ -1,6 +1,6 @@
 # Task Status Transition Validation – Razor UI
 
-![CI](https://github.com/fewioaghwrao/TaskStatusTransitionValidation_Razor/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/fewioaghwrao/TaskStatusTransitionValidation_Razor/actions/workflows/razormock-ci.yml/badge.svg)
 
 GitHub Actions により、push / pull request 時に  
 ビルドおよびテストが自動実行されます。
