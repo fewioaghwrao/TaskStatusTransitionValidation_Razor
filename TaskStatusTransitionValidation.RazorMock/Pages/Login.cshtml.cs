@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TaskStatusTransitionValidation.RazorMock.Services;
 
@@ -27,14 +27,14 @@ public class LoginModel : PageModel
 
         if (result == null)
         {
-            ErrorMessage = "ƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½B“ü—Í“à—e‚ğ‚²Šm”F‚­‚¾‚³‚¢B";
+            ErrorMessage = "ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚å…¥åŠ›å†…å®¹ã‚’ã”ç¢ºèªãã ã•ã„ã€‚";
             return Page();
         }
 
         Response.Cookies.Append("auth_token", result.Token, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false, // HTTPS‰»‚µ‚½‚ç true „§
+            Secure = false, // HTTPSåŒ–ã—ãŸã‚‰ true æ¨å¥¨
             SameSite = SameSiteMode.Lax
         });
 

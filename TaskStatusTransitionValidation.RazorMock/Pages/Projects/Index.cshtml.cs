@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TaskStatusTransitionValidation.RazorMock.Models;
 using TaskStatusTransitionValidation.RazorMock.Services;
@@ -46,7 +46,7 @@ public class IndexModel(IApiClient apiClient, IMeProvider meProvider) : PageMode
             var meResponse = await meProvider.GetMeAsync(token, cancellationToken);
             if (meResponse is null)
             {
-                SetErrorState("ƒ†[ƒU[î•ñ‚Ìæ“¾‚É¸”s‚µ‚Ü‚µ‚½B");
+                SetErrorState("ãƒ¦ãƒ¼ã‚¶ãƒ¼æƒ…å ±ã®å–å¾—ã«å¤±æ•—ã—ã¾ã—ãŸã€‚");
                 return RedirectToPage("/Login");
             }
 
