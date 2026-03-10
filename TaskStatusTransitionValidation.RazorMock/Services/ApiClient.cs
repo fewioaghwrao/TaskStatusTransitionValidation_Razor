@@ -6,7 +6,7 @@ using TaskStatusTransitionValidation.RazorMock.Models;
 
 namespace TaskStatusTransitionValidation.RazorMock.Services;
 
-public class ApiClient
+public class ApiClient : IApiClient
 {
     private readonly HttpClient _http;
 

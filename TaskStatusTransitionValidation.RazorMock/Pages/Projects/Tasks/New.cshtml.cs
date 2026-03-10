@@ -6,7 +6,7 @@ using TaskStatusTransitionValidation.RazorMock.Services;
 
 namespace TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks;
 
-public class NewModel(ApiClient apiClient) : PageModel
+public class NewModel(IApiClient apiClient) : PageModel
 {
     [BindProperty(SupportsGet = true)]
     public int ProjectId { get; set; }
@@ -106,7 +106,7 @@ public class NewModel(ApiClient apiClient) : PageModel
             return Page();
         }
 
-        return RedirectToPage("/Projects/Details", new { projectId = ProjectId });
+        return RedirectToPage("/Projects/Tasks/Index", new { projectId = ProjectId });
     }
 
     private async Task<IActionResult?> LoadCurrentContextAsync(int projectId, CancellationToken cancellationToken)

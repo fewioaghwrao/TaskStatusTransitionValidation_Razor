@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
-builder.Services.AddHttpClient<ApiClient>(client =>
+builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
 {
     client.BaseAddress = new Uri(
         builder.Configuration["Api:BaseUrl"]
@@ -32,3 +32,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.Run();
+
+public partial class Program
+{
+}

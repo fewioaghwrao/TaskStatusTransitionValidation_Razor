@@ -5,7 +5,7 @@ using TaskStatusTransitionValidation.RazorMock.Services;
 
 namespace TaskStatusTransitionValidation.RazorMock.Pages.Projects;
 
-public class NewModel(ApiClient apiClient) : PageModel
+public class NewModel(IApiClient apiClient) : PageModel
 {
     public MeResponse? Me { get; private set; }
 

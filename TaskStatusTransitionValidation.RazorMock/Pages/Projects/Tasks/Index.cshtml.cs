@@ -7,7 +7,7 @@ using System.IO;
 
 namespace TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks;
 
-public class IndexModel(ApiClient apiClient, IMeProvider meProvider) : PageModel
+public class IndexModel(IApiClient apiClient, IMeProvider meProvider) : PageModel
 {
     private const int DueSoonDays = 7;
 

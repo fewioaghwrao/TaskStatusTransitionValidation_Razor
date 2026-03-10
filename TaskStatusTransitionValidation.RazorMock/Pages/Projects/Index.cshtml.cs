@@ -5,7 +5,7 @@ using TaskStatusTransitionValidation.RazorMock.Services;
 
 namespace TaskStatusTransitionValidation.RazorMock.Pages.Projects;
 
-public class IndexModel(ApiClient apiClient, IMeProvider meProvider) : PageModel
+public class IndexModel(IApiClient apiClient, IMeProvider meProvider) : PageModel
 {
     public MeDto Me { get; private set; } = new();
 

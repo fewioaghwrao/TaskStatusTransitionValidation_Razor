@@ -4,9 +4,9 @@ using TaskStatusTransitionValidation.RazorMock.Services;
 
 public class LoginModel : PageModel
 {
-    private readonly ApiClient _api;
+    private readonly IApiClient _api;
 
-    public LoginModel(ApiClient api)
+    public LoginModel(IApiClient api)
     {
         _api = api;
     }

@@ -2,9 +2,9 @@
 
 public sealed class ApiMeProvider : IMeProvider
 {
-    private readonly ApiClient _apiClient;
+    private readonly IApiClient _apiClient;
 
-    public ApiMeProvider(ApiClient apiClient)
+    public ApiMeProvider(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }

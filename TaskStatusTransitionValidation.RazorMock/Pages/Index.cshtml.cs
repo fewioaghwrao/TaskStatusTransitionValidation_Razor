@@ -7,7 +7,7 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
 {
     public IActionResult OnGet()
     {
-        var token = Request.Cookies["token"];
+        var token = Request.Cookies["auth_token"];
 
         if (string.IsNullOrWhiteSpace(token))
         {

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskStatusTransitionValidation.RazorMock", "TaskStatusTransitionValidation.RazorMock\TaskStatusTransitionValidation.RazorMock.csproj", "{2D53AAC3-9F66-4EDF-9271-8F2938508CDA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSTValidation.Tests", "TSTValidation.Tests\TSTValidation.Tests.csproj", "{15D09925-C20A-429B-A1A2-BEE73EA76225}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2D53AAC3-9F66-4EDF-9271-8F2938508CDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D53AAC3-9F66-4EDF-9271-8F2938508CDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D53AAC3-9F66-4EDF-9271-8F2938508CDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15D09925-C20A-429B-A1A2-BEE73EA76225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15D09925-C20A-429B-A1A2-BEE73EA76225}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15D09925-C20A-429B-A1A2-BEE73EA76225}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15D09925-C20A-429B-A1A2-BEE73EA76225}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,7 +6,7 @@ using TaskStatusTransitionValidation.RazorMock.Services;
 
 namespace TaskStatusTransitionValidation.RazorMock.Pages.Projects.Tasks;
 
-public class TaskDetailModel(ApiClient apiClient) : PageModel
+public class TaskDetailModel(IApiClient apiClient) : PageModel
 {
     private static readonly string[] AllowedStatuses = ["ToDo", "Doing", "Blocked", "Done"];
     private static readonly string[] AllowedPriorities = ["High", "Medium", "Low"];
