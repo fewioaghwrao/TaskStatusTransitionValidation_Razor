@@ -222,34 +222,96 @@
             const submitBtn = document.getElementById("submitBtn");
             const emailInput = document.getElementById("email");
 
-        togglePasswordBtn.addEventListener("click", function () {
-            const isPassword = passwordInput.type === "password";
-            passwordInput.type = isPassword ? "text" : "password";
-            togglePasswordBtn.textContent = isPassword ? "🙈" : "👁";
-            togglePasswordBtn.setAttribute(
-                "aria-label",
-                isPassword ? "パスワードを非表示" : "パスワードを表示"
-            );
-        });
+            function resetSubmitButton() {
+                if (!submitBtn) return;
+                submitBtn.disabled = false;
+                submitBtn.textContent = "ログイン";
+                submitBtn.style.cursor = "pointer";
+                submitBtn.style.opacity = "1";
+            }
 
-            form.addEventListener("submit", function () {
+            function setSubmittingState() {
+                if (!submitBtn) return;
                 submitBtn.disabled = true;
                 submitBtn.textContent = "ログイン中…";
                 submitBtn.style.cursor = "not-allowed";
                 submitBtn.style.opacity = "0.85";
+            }
+
+            function canSubmitForm() {
+                if (!form) return false;
+
+                // HTML5 バリデーション
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return false;
+                }
+
+                // jQuery Validate / unobtrusive validation がある場合はその結果も使う
+                if (window.jQuery && typeof window.jQuery(form).valid === "function") {
+                    return window.jQuery(form).valid();
+                }
+
+                return true;
+            }
+
+            // 画面表示時は常に通常状態へ戻す
+            resetSubmitButton();
+
+            // ブラウザ戻るなどの復元対策
+            window.addEventListener("pageshow", function () {
+                resetSubmitButton();
             });
 
-            emailInput.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") {
-                    form.requestSubmit();
-                }
-            });
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener("click", function () {
+                    const isPassword = passwordInput.type === "password";
+                    passwordInput.type = isPassword ? "text" : "password";
+                    togglePasswordBtn.textContent = isPassword ? "🙈" : "👁";
+                    togglePasswordBtn.setAttribute(
+                        "aria-label",
+                        isPassword ? "パスワードを非表示" : "パスワードを表示"
+                    );
+                });
+            }
 
-            passwordInput.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") {
-                    form.requestSubmit();
-                }
-            });
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    // すでに送信中なら二重送信を防ぐ
+                    if (submitBtn && submitBtn.disabled) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // バリデーションNGなら送信状態にしない
+                    if (!canSubmitForm()) {
+                        resetSubmitButton();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // バリデーションOKのときだけ送信中表示
+                    setSubmittingState();
+                });
+            }
+
+            if (emailInput && form) {
+                emailInput.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        form.requestSubmit();
+                    }
+                });
+            }
+
+            if (passwordInput && form) {
+                passwordInput.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        form.requestSubmit();
+                    }
+                });
+            }
         })();
     </script>
 }
