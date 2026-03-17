@@ -16,7 +16,7 @@ GitHub Actions により、push / pull request 時に
 
 ---
 
-# 🔗 Related Repository
+# 🔗 関連リソース
 
 Backend API
 
@@ -34,6 +34,37 @@ Backend (ASP.NET Core Web API)
    ▼
 Database
 ```
+
+---
+
+## 🌐 Demo (Next.js版)
+実際の画面操作を確認しやすい公開デモとして、Next.js 版も用意しています。  
+こちらは Azure Static Web Apps 上で公開しており、ブラウザからすぐに動作確認できます。
+
+**デモサイト**:  
+https://yellow-tree-06abc4d00.4.azurestaticapps.net/login
+
+以下のテストアカウントでお試しいただけます。
+
+| 役割 | メールアドレス | パスワード |
+|------|----------------|------------|
+| Leader | demo1@example.com | Demo1234! |
+| Member | demo2@example.com | Demo1234! |
+
+> Leader / Member で利用できる機能が異なります。  
+> 役割ごとの機能差は本README内の「権限管理」をご参照ください。  
+> 本デモはコストを考慮し、Azure Static Web Apps 上で公開しています。
+
+---
+
+## 📝 画面設計書修正・UI改修サンプル集
+本リポジトリを題材に、既存画面を前提とした  
+**画面設計書修正・UI改修・差分整理・確認資料作成** をまとめたサンプル集です。  
+
+単なる画面実装だけでなく、  
+Before / After 比較、修正概要、差分表、総合テスト資料まで含めて整理しています。
+
+[画面設計書修正・UI改修サンプル集（Razor Pages）](https://github.com/fewioaghwrao/TaskStatusTransitionValidation-RazorPages)
 
 ---
 
